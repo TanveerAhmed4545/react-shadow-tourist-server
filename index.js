@@ -31,6 +31,7 @@ async function run() {
 
 
     const UserCollection = client.db("shadowDb").collection("Users");
+    const packageCollection = client.db("shadowDb").collection("packages");
 
 
     // user related api 
@@ -46,6 +47,22 @@ async function run() {
         const result = await UserCollection.insertOne(user);
         res.send(result);
       })
+
+
+    //   packages
+
+    app.get('/package',async(req,res)=>{
+        const result = await packageCollection.find().toArray();
+        res.send(result);
+    })
+
+    app.post('/package',async(req,res)=>{
+        const item = req.body;
+        const result = await packageCollection.insertOne(item);
+        res.send(result);
+      })
+
+
 
 
 
