@@ -30,23 +30,77 @@ async function run() {
     await client.connect();
 
 
-    const UserCollection = client.db("shadowDb").collection("Users");
+    const userCollection = client.db("shadowDb").collection("Users");
     const packageCollection = client.db("shadowDb").collection("packages");
 
 
     // user related api 
+    app.get('/users',async(req,res)=>{
+        const result = await userCollection.find().toArray();
+        res.send(result);
+    })
+
+    // get a user info by email from db
+    app.get('/user-role/:email',async(req,res)=>{
+        const email = req.params.email
+        const result = await userCollection.findOne({email});
+        res.send(result)
+      })
+
     app.post('/users',async (req,res)=>{
         const user = req.body;
         // insert email if user does not exists
   
         const query = {email: user.email}
-        const existingUser = await UserCollection.findOne(query)
+        const existingUser = await userCollection.findOne(query)
         if(existingUser){
           return res.send({message: 'user already exists', insertedId: null})
         }
-        const result = await UserCollection.insertOne(user);
+        const result = await userCollection.insertOne(user);
         res.send(result);
       })
+
+      //update a user role
+        app.patch('/users/update/:email', async (req, res) => {
+        const email = req.params.email
+        const user = req.body
+        const query = { email }
+        const updateDoc = {
+          $set: { ...user },
+        }
+        const result = await userCollection.updateOne(query, updateDoc)
+        res.send(result)
+      })
+
+      
+       // save a user data in db
+       app.put('/user',async (req,res)=>{
+        const user = req.body;
+        const query = {email: user?.email}
+
+        // check if user already exists in db
+  
+        const isExist = await userCollection.findOne(query)
+        if(isExist){
+          if(user.status === 'Requested'){
+           const result = await userCollection.updateOne(query,{$set: {status: user?.status}})
+           return res.send(result);
+          }else{
+            return res.send(isExist)
+          }
+        }
+
+        const options = {upsert: true}     
+        
+        const updateDoc ={
+          $set: {
+            ...user
+          }
+        }
+        const result = await userCollection.updateOne(query,updateDoc,options)
+        res.send(result);
+      })
+  
 
 
     //   packages
