@@ -32,6 +32,7 @@ async function run() {
 
     const userCollection = client.db("shadowDb").collection("Users");
     const packageCollection = client.db("shadowDb").collection("packages");
+    const wishlistCollection = client.db("shadowDb").collection("wishlist");
 
 
     // jwt related api 
@@ -166,6 +167,30 @@ async function run() {
         const result = await packageCollection.findOne(query);
         res.send(result);
     })
+
+
+    // wishlist
+
+    app.patch('/wishlist-add/:id',async(req,res)=>{
+      const id = req.params.id;
+      const wishData = req.body;
+      const query = {_id: new ObjectId(id)}
+      const options = { upsert: true };
+      const updateDoc={
+          $set: {
+            wishlist: wishData.wishlist,
+          }
+        }
+      const result = await packageCollection.updateOne(query,updateDoc,options);
+      res.send(result);
+  })
+
+    // wishlist post
+  app.post('/wishlist-post',async(req,res)=>{
+    const newWishlist = req.body;
+    const result = await wishlistCollection.insertOne(newWishlist);
+    res.send(result);
+  })
 
 
 
