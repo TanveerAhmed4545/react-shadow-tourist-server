@@ -2,7 +2,7 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 require('dotenv').config();
-
+const jwt = require('jsonwebtoken');
 const port = process.env.PORT || 5000;
 
 // middleware
@@ -34,8 +34,47 @@ async function run() {
     const packageCollection = client.db("shadowDb").collection("packages");
 
 
+    // jwt related api 
+    app.post('/jwt',async(req,res)=>{
+      const user = req.body;
+      const token = jwt.sign(user,process.env.ACCESS_TOKEN_SECRET,{expiresIn: '1h'});
+      res.send({token})
+    })
+
+    // verify token 
+    const verifyToken = (req,res,next) =>{
+      if(!req.headers.authorization){
+       return res.status(401).send({message: 'forbidden access'});
+      }
+      const token = req.headers.authorization.split(' ')[1];
+      
+      jwt.verify(token, process.env.ACCESS_TOKEN_SECRET , (err, decoded)=>{
+        if(err){
+          // console.error('Token verification error:', err);
+          return res.status(401).send({message: 'Forbidden access'})
+        }
+        req.decoded = decoded
+        // console.log('Decoded token:', decoded);
+        next();
+      })
+    }
+
+    // use verify admin after verifyToken
+    const verifyAdmin = async(req,res,next) =>{
+      const email = req.decoded.email;
+      const query = {email: email}
+      const user = await userCollection.findOne(query);
+      const isAdmin = user?.role === 'admin';
+      if(!isAdmin){
+       return res.status(403).send({message: 'forbidden access'});
+ 
+      }
+      next();
+     }
+
+
     // user related api 
-    app.get('/users',async(req,res)=>{
+    app.get('/users',verifyToken,verifyAdmin,async(req,res)=>{
         const result = await userCollection.find().toArray();
         res.send(result);
     })
@@ -61,7 +100,7 @@ async function run() {
       })
 
       //update a user role
-        app.patch('/users/update/:email', async (req, res) => {
+        app.patch('/users/update/:email',verifyToken,verifyAdmin, async (req, res) => {
         const email = req.params.email
         const user = req.body
         const query = { email }
@@ -110,7 +149,7 @@ async function run() {
         res.send(result);
     })
 
-    app.post('/package',async(req,res)=>{
+    app.post('/package',verifyToken,verifyAdmin,async(req,res)=>{
         const item = req.body;
         const result = await packageCollection.insertOne(item);
         res.send(result);
