@@ -280,6 +280,22 @@ async function run() {
     });
 
 
+    // booking by email
+
+    app.get("/booking/:email", async (req, res) => {
+      const query = { email: req.params.email };
+      const result = await bookingCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    // booking delete
+    app.delete("/booking-delete/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await bookingCollection.deleteOne(query);
+      res.send(result);
+    });    
+
 
 
     // Send a ping to confirm a successful connection
