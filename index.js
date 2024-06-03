@@ -29,6 +29,8 @@ async function run() {
     const userCollection = client.db("shadowDb").collection("Users");
     const packageCollection = client.db("shadowDb").collection("packages");
     const wishlistCollection = client.db("shadowDb").collection("wishlist");
+    const guidesCollection = client.db("shadowDb").collection("guides");
+    const reviewsCollection = client.db("shadowDb").collection("reviews");
 
     // jwt related api
     app.post("/jwt", async (req, res) => {
@@ -234,6 +236,41 @@ async function run() {
       const result = await wishlistCollection.deleteOne(query);
       res.send(result);
     });
+
+
+    // guides
+    app.get("/guides", async (req, res) => {
+      const result = await guidesCollection.find().toArray();
+      res.send(result);
+    });
+
+    // guides profile
+
+    app.get("/guide/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await guidesCollection.findOne(query);
+      res.send(result);
+    });
+
+
+     // review add
+
+     app.post('/reviews',async(req,res)=>{
+      const {userName,guideId,userRating,userComment,timestamp,userPhoto } = req.body;
+      const newReview = { userName,guideId,userRating,userComment, timestamp,userPhoto };
+      const result = await reviewsCollection.insertOne(newReview);
+      res.send(result);
+     })
+
+    //  reviews get
+    app.get("/reviews", async (req, res) => {
+      const result = await reviewsCollection.find().toArray();
+      res.send(result);
+    });
+
+
+
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
