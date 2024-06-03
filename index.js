@@ -31,6 +31,7 @@ async function run() {
     const wishlistCollection = client.db("shadowDb").collection("wishlist");
     const guidesCollection = client.db("shadowDb").collection("guides");
     const reviewsCollection = client.db("shadowDb").collection("reviews");
+    const bookingCollection = client.db("shadowDb").collection("booking");
 
     // jwt related api
     app.post("/jwt", async (req, res) => {
@@ -266,6 +267,15 @@ async function run() {
     //  reviews get
     app.get("/reviews", async (req, res) => {
       const result = await reviewsCollection.find().toArray();
+      res.send(result);
+    });
+
+
+    // booking data
+
+    app.post("/booking-post", async (req, res) => {
+      const item = req.body;
+      const result = await bookingCollection.insertOne(item);
       res.send(result);
     });
 
