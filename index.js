@@ -32,6 +32,7 @@ async function run() {
     const guidesCollection = client.db("shadowDb").collection("guides");
     const reviewsCollection = client.db("shadowDb").collection("reviews");
     const bookingCollection = client.db("shadowDb").collection("booking");
+    const typesCollection = client.db("shadowDb").collection("tourTypes");
 
     // jwt related api
     app.post("/jwt", async (req, res) => {
@@ -351,6 +352,13 @@ async function run() {
       const result = await bookingCollection.deleteOne(query);
       res.send(result);
     });    
+
+
+    // tour types
+    app.get("/types", async (req, res) => {
+      const result = await typesCollection.find().toArray();
+      res.send(result);
+    });
 
 
 
