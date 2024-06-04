@@ -254,6 +254,62 @@ async function run() {
       res.send(result);
     });
 
+    // guide profile add 
+    app.post("/guide", async (req, res) => {
+      const guide = req.body;
+      // insert email if user does not exists
+      const query = { email: guide.email };
+      const existingUser = await guidesCollection.findOne(query);
+      if (existingUser) {
+        return res.send({ message: "guide already exists", insertedId: null });
+      }
+      const result = await guidesCollection.insertOne(guide);
+      res.send(result);
+    });
+
+
+    // assigned tour 
+    app.get("/assign/:name", async (req, res) => {
+      const query = { tourGuideName: req.params.name };
+      const result = await bookingCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    // assigned tour data rejected and accepted
+    app.patch("/booking-status/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          status: "Rejected",
+        },
+      };
+      const result = await bookingCollection.updateOne(
+        query,
+        updateDoc,
+        options
+      );
+      res.send(result);
+    });
+
+    app.patch("/booking-accepted/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          status: "Accepted",
+        },
+      };
+      const result = await bookingCollection.updateOne(
+        query,
+        updateDoc,
+        options
+      );
+      res.send(result);
+    });
+
 
      // review add
 
