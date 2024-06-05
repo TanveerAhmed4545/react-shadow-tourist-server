@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 require("dotenv").config();
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 const jwt = require("jsonwebtoken");
 const port = process.env.PORT || 5000;
 
@@ -33,6 +34,7 @@ async function run() {
     const reviewsCollection = client.db("shadowDb").collection("reviews");
     const bookingCollection = client.db("shadowDb").collection("booking");
     const typesCollection = client.db("shadowDb").collection("tourTypes");
+    const paymentCollection = client.db("shadowDb").collection("payments");
 
     // jwt related api
     app.post("/jwt", async (req, res) => {
@@ -359,6 +361,41 @@ async function run() {
       const result = await typesCollection.find().toArray();
       res.send(result);
     });
+
+    // payment 
+
+    app.post('/create-payment-intent',async(req,res)=>{
+      const {price} = req.body;
+      const amount = parseInt(price * 100);
+    
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: 'usd',
+        payment_method_types: ['card']
+      })
+    
+      res.send({
+        clientSecret: paymentIntent.client_secret,
+      })
+    
+    })
+
+    app.post("/payments", verifyToken,async (req, res) => {
+      const item = req.body;
+      const paymentResult = await paymentCollection.insertOne(item);
+      // res.send(paymentResult);
+      const response = {
+        paymentResult
+      };
+       res.status(200).send(response);
+    });
+
+    // payment get by email
+    app.get('/payments/:email',verifyToken,async(req,res)=>{
+      const query = {email: req.params.email}
+      const result = await paymentCollection.find(query).toArray();
+      res.send(result);
+    })
 
 
 
