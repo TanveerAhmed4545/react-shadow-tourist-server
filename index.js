@@ -36,6 +36,7 @@ async function run() {
     const typesCollection = client.db("shadowDb").collection("tourTypes");
     const paymentCollection = client.db("shadowDb").collection("payments");
     const storyCollection = client.db("shadowDb").collection("story");
+    const blogCollection = client.db("shadowDb").collection("blogs");
 
     // jwt related api
     app.post("/jwt", async (req, res) => {
@@ -417,6 +418,12 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await storyCollection.findOne(query);
+      res.send(result);
+    });
+
+    // blogs
+    app.get("/blogs", async (req, res) => {
+      const result = await blogCollection.find().toArray();
       res.send(result);
     });
 
