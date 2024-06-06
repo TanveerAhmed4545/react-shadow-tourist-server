@@ -35,6 +35,7 @@ async function run() {
     const bookingCollection = client.db("shadowDb").collection("booking");
     const typesCollection = client.db("shadowDb").collection("tourTypes");
     const paymentCollection = client.db("shadowDb").collection("payments");
+    const storyCollection = client.db("shadowDb").collection("story");
 
     // jwt related api
     app.post("/jwt", async (req, res) => {
@@ -396,6 +397,28 @@ async function run() {
       const result = await paymentCollection.find(query).toArray();
       res.send(result);
     })
+
+    // story  post
+    app.post("/story", async (req, res) => {
+      const newStory = req.body;
+      const result = await storyCollection.insertOne(newStory);
+      res.send(result);
+    });
+
+    // story get
+    app.get("/story", async (req, res) => {
+      const result = await storyCollection.find().toArray();
+      res.send(result);
+    });
+
+    // story details
+
+    app.get("/story/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await storyCollection.findOne(query);
+      res.send(result);
+    });
 
 
 
