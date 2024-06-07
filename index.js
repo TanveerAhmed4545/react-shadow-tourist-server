@@ -25,7 +25,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
 
     const userCollection = client.db("shadowDb").collection("Users");
     const packageCollection = client.db("shadowDb").collection("packages");
@@ -80,6 +80,9 @@ async function run() {
     // user related api
     app.get("/users", verifyToken, verifyAdmin, async (req, res) => {
       const { search, role } = req.query;
+      const page = parseInt(req.query.page);
+      // console.log(req.query);
+      const resultsPerPage = parseInt(10);
       const query = {};
       if (search) {
         query.$or = [
@@ -91,7 +94,10 @@ async function run() {
         query.role = role;
       }
 
-      const result = await userCollection.find(query).toArray();
+      const result = await userCollection.find(query)
+      .skip(page * resultsPerPage)
+      .limit(resultsPerPage)
+      .toArray();
       res.send(result);
     });
 
@@ -100,6 +106,13 @@ async function run() {
       const email = req.params.email;
       const result = await userCollection.findOne({ email });
       res.send(result);
+    });
+
+    // user count
+
+    app.get("/userCount", verifyToken,async (req, res) => {
+      const count = await userCollection.estimatedDocumentCount();
+      res.send({ count });
     });
 
     app.post("/users", async (req, res) => {
@@ -334,7 +347,7 @@ async function run() {
 
     // booking data
 
-    app.post("/booking-post", async (req, res) => {
+    app.post("/booking-post",verifyToken, async (req, res) => {
       const item = req.body;
       const result = await bookingCollection.insertOne(item);
       res.send(result);
@@ -343,14 +356,32 @@ async function run() {
 
     // booking by email
 
-    app.get("/booking/:email", async (req, res) => {
+    app.get("/booking/:email",verifyToken, async (req, res) => {
       const query = { email: req.params.email };
       const result = await bookingCollection.find(query).toArray();
       res.send(result);
     });
 
+    app.get("/booking-get/:email",verifyToken, async (req, res) => {
+      const page = parseInt(req.query.page);
+      // console.log(req.query);
+      const resultsPerPage = parseInt(10);
+      const query = { email: req.params.email };
+      const result = await bookingCollection.find(query)
+      .skip(page * resultsPerPage)
+      .limit(resultsPerPage)
+      .toArray();
+      res.send(result);
+    });
+
+    app.get("/bookingCount/:email", verifyToken,async (req, res) => {
+      const query = { email: req.params.email };
+      const count = await bookingCollection.countDocuments(query);
+      res.send({ count });
+    });
+
     // booking delete
-    app.delete("/booking-delete/:id", async (req, res) => {
+    app.delete("/booking-delete/:id",verifyToken, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await bookingCollection.deleteOne(query);
