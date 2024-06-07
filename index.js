@@ -288,9 +288,22 @@ async function run() {
 
     // assigned tour 
     app.get("/assign/:name", async (req, res) => {
+      const page = parseInt(req.query.page);
+      // console.log(req.query);
+      const resultsPerPage = parseInt(10);
       const query = { tourGuideName: req.params.name };
-      const result = await bookingCollection.find(query).toArray();
+      const result = await bookingCollection.find(query)
+      .skip(page * resultsPerPage)
+      .limit(resultsPerPage)
+      .toArray();
       res.send(result);
+    });
+
+    // assigned count 
+    app.get("/assignedCount/:email", verifyToken,async (req, res) => {
+      const query = { email: req.params.email };
+      const count = await bookingCollection.estimatedDocumentCount(query);
+      res.send({ count });
     });
 
     // assigned tour data rejected and accepted
