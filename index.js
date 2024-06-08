@@ -224,29 +224,35 @@ async function run() {
     });
 
     app.get("/wishlist/:email", async (req, res) => {
+      const page = parseInt(req.query.page);
+      // console.log(req.query);
+      const resultsPerPage = parseInt(10);
       const query = { email: req.params.email };
-      const result = await wishlistCollection.find(query).toArray();
+      const result = await wishlistCollection.find(query)
+      .skip(page * resultsPerPage)
+      .limit(resultsPerPage)
+      .toArray();
       res.send(result);
     });
 
     // wishlist cancel
 
-    app.patch("/wishlists/:id", async (req, res) => {
-      const id = req.params.id;
-      const query = { _id: new ObjectId(id) };
-      const options = { upsert: true };
-      const updateDoc = {
-        $set: {
-          wishlist: false,
-        },
-      };
-      const result = await packageCollection.updateOne(
-        query,
-        updateDoc,
-        options
-      );
-      res.send(result);
-    });
+    // app.patch("/wishlists/:id", async (req, res) => {
+    //   const id = req.params.id;
+    //   const query = { _id: new ObjectId(id) };
+    //   const options = { upsert: true };
+    //   const updateDoc = {
+    //     $set: {
+    //       wishlist: false,
+    //     },
+    //   };
+    //   const result = await packageCollection.updateOne(
+    //     query,
+    //     updateDoc,
+    //     options
+    //   );
+    //   res.send(result);
+    // });
 
     // wishlist delete
     app.delete("/wishlist-delete/:id", async (req, res) => {
@@ -254,6 +260,13 @@ async function run() {
       const query = { _id: new ObjectId(id) };
       const result = await wishlistCollection.deleteOne(query);
       res.send(result);
+    });
+
+    // wishlist count
+       app.get("/wishlistCount/:email", verifyToken,async (req, res) => {
+      const query = { email: req.params.email };
+      const count = await wishlistCollection.estimatedDocumentCount(query);
+      res.send({ count });
     });
 
 
@@ -287,7 +300,7 @@ async function run() {
 
 
     // assigned tour 
-    app.get("/assign/:name", async (req, res) => {
+    app.get("/assign/:name",verifyToken, async (req, res) => {
       const page = parseInt(req.query.page);
       // console.log(req.query);
       const resultsPerPage = parseInt(10);
@@ -307,7 +320,7 @@ async function run() {
     });
 
     // assigned tour data rejected and accepted
-    app.patch("/booking-status/:id", async (req, res) => {
+    app.patch("/booking-status/:id",verifyToken, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const options = { upsert: true };
