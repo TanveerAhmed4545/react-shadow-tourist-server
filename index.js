@@ -7,7 +7,14 @@ const jwt = require("jsonwebtoken");
 const port = process.env.PORT || 5000;
 
 // middleware
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'https://shadow-tourist.web.app',
+    'https://shadow-tourist.firebaseapp.com'
+  ]
+}));
 app.use(express.json());
 
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
