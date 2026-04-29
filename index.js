@@ -12,7 +12,8 @@ app.use(cors({
     'http://localhost:5173',
     'http://localhost:5174',
     'https://shadow-tourist.web.app',
-    'https://shadow-tourist.firebaseapp.com'
+    'https://shadow-tourist.firebaseapp.com',
+    'https://react-shadow-tourist-client.vercel.app'
   ]
 }));
 app.use(express.json());
