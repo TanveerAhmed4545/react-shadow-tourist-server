@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 require("dotenv").config();
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const jwt = require("jsonwebtoken");
 const port = process.env.PORT || 5000;
 
@@ -12,8 +12,7 @@ app.use(cors({
     'http://localhost:5173',
     'http://localhost:5174',
     'https://shadow-tourist.web.app',
-    'https://shadow-tourist.firebaseapp.com',
-    'https://react-shadow-tourist-client.vercel.app'
+    'https://shadow-tourist.firebaseapp.com'
   ]
 }));
 app.use(express.json());
@@ -102,10 +101,11 @@ async function run() {
         query.role = role;
       }
 
-      const result = await userCollection.find(query)
-      .skip(page * resultsPerPage)
-      .limit(resultsPerPage)
-      .toArray();
+      const result = await userCollection
+        .find(query)
+        .skip(page * resultsPerPage)
+        .limit(resultsPerPage)
+        .toArray();
       res.send(result);
     });
 
@@ -118,7 +118,7 @@ async function run() {
 
     // user count
 
-    app.get("/userCount", verifyToken,async (req, res) => {
+    app.get("/userCount", verifyToken, async (req, res) => {
       const count = await userCollection.estimatedDocumentCount();
       res.send({ count });
     });
@@ -236,10 +236,11 @@ async function run() {
       // console.log(req.query);
       const resultsPerPage = parseInt(10);
       const query = { email: req.params.email };
-      const result = await wishlistCollection.find(query)
-      .skip(page * resultsPerPage)
-      .limit(resultsPerPage)
-      .toArray();
+      const result = await wishlistCollection
+        .find(query)
+        .skip(page * resultsPerPage)
+        .limit(resultsPerPage)
+        .toArray();
       res.send(result);
     });
 
@@ -271,12 +272,11 @@ async function run() {
     });
 
     // wishlist count
-       app.get("/wishlistCount/:email", verifyToken,async (req, res) => {
+    app.get("/wishlistCount/:email", verifyToken, async (req, res) => {
       const query = { email: req.params.email };
       const count = await wishlistCollection.estimatedDocumentCount(query);
       res.send({ count });
     });
-
 
     // guides
     app.get("/guides", async (req, res) => {
@@ -293,7 +293,7 @@ async function run() {
       res.send(result);
     });
 
-    // guide profile add 
+    // guide profile add
     app.post("/guide", async (req, res) => {
       const guide = req.body;
       // insert email if user does not exists
@@ -306,29 +306,29 @@ async function run() {
       res.send(result);
     });
 
-
-    // assigned tour 
-    app.get("/assign/:name",verifyToken, async (req, res) => {
+    // assigned tour
+    app.get("/assign/:name", verifyToken, async (req, res) => {
       const page = parseInt(req.query.page);
       // console.log(req.query);
       const resultsPerPage = parseInt(10);
       const query = { tourGuideName: req.params.name };
-      const result = await bookingCollection.find(query)
-      .skip(page * resultsPerPage)
-      .limit(resultsPerPage)
-      .toArray();
+      const result = await bookingCollection
+        .find(query)
+        .skip(page * resultsPerPage)
+        .limit(resultsPerPage)
+        .toArray();
       res.send(result);
     });
 
-    // assigned count 
-    app.get("/assignedCount/:email", verifyToken,async (req, res) => {
+    // assigned count
+    app.get("/assignedCount/:email", verifyToken, async (req, res) => {
       const query = { email: req.params.email };
       const count = await bookingCollection.estimatedDocumentCount(query);
       res.send({ count });
     });
 
     // assigned tour data rejected and accepted
-    app.patch("/booking-status/:id",verifyToken, async (req, res) => {
+    app.patch("/booking-status/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const options = { upsert: true };
@@ -362,15 +362,28 @@ async function run() {
       res.send(result);
     });
 
+    // review add
 
-     // review add
-
-     app.post('/reviews',async(req,res)=>{
-      const {userName,guideId,userRating,userComment,timestamp,userPhoto } = req.body;
-      const newReview = { userName,guideId,userRating,userComment, timestamp,userPhoto };
+    app.post("/reviews", async (req, res) => {
+      const {
+        userName,
+        guideId,
+        userRating,
+        userComment,
+        timestamp,
+        userPhoto,
+      } = req.body;
+      const newReview = {
+        userName,
+        guideId,
+        userRating,
+        userComment,
+        timestamp,
+        userPhoto,
+      };
       const result = await reviewsCollection.insertOne(newReview);
       res.send(result);
-     })
+    });
 
     //  reviews get
     app.get("/reviews", async (req, res) => {
@@ -378,50 +391,48 @@ async function run() {
       res.send(result);
     });
 
-
     // booking data
 
-    app.post("/booking-post",verifyToken, async (req, res) => {
+    app.post("/booking-post", verifyToken, async (req, res) => {
       const item = req.body;
       const result = await bookingCollection.insertOne(item);
       res.send(result);
     });
 
-
     // booking by email
 
-    app.get("/booking/:email",verifyToken, async (req, res) => {
+    app.get("/booking/:email", verifyToken, async (req, res) => {
       const query = { email: req.params.email };
       const result = await bookingCollection.find(query).toArray();
       res.send(result);
     });
 
-    app.get("/booking-get/:email",verifyToken, async (req, res) => {
+    app.get("/booking-get/:email", verifyToken, async (req, res) => {
       const page = parseInt(req.query.page);
       // console.log(req.query);
       const resultsPerPage = parseInt(10);
       const query = { email: req.params.email };
-      const result = await bookingCollection.find(query)
-      .skip(page * resultsPerPage)
-      .limit(resultsPerPage)
-      .toArray();
+      const result = await bookingCollection
+        .find(query)
+        .skip(page * resultsPerPage)
+        .limit(resultsPerPage)
+        .toArray();
       res.send(result);
     });
 
-    app.get("/bookingCount/:email", verifyToken,async (req, res) => {
+    app.get("/bookingCount/:email", verifyToken, async (req, res) => {
       const query = { email: req.params.email };
       const count = await bookingCollection.countDocuments(query);
       res.send({ count });
     });
 
     // booking delete
-    app.delete("/booking-delete/:id",verifyToken, async (req, res) => {
+    app.delete("/booking-delete/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await bookingCollection.deleteOne(query);
       res.send(result);
-    });    
-
+    });
 
     // tour types
     app.get("/types", async (req, res) => {
@@ -429,40 +440,39 @@ async function run() {
       res.send(result);
     });
 
-    // payment 
+    // payment
 
-    app.post('/create-payment-intent',async(req,res)=>{
-      const {price} = req.body;
+    app.post("/create-payment-intent", async (req, res) => {
+      const { price } = req.body;
       const amount = parseInt(price * 100);
-    
+
       const paymentIntent = await stripe.paymentIntents.create({
         amount: amount,
-        currency: 'usd',
-        payment_method_types: ['card']
-      })
-    
+        currency: "usd",
+        payment_method_types: ["card"],
+      });
+
       res.send({
         clientSecret: paymentIntent.client_secret,
-      })
-    
-    })
+      });
+    });
 
-    app.post("/payments", verifyToken,async (req, res) => {
+    app.post("/payments", verifyToken, async (req, res) => {
       const item = req.body;
       const paymentResult = await paymentCollection.insertOne(item);
       // res.send(paymentResult);
       const response = {
-        paymentResult
+        paymentResult,
       };
-       res.status(200).send(response);
+      res.status(200).send(response);
     });
 
     // payment get by email
-    app.get('/payments/:email',verifyToken,async(req,res)=>{
-      const query = {email: req.params.email}
+    app.get("/payments/:email", verifyToken, async (req, res) => {
+      const query = { email: req.params.email };
       const result = await paymentCollection.find(query).toArray();
       res.send(result);
-    })
+    });
 
     // story  post
     app.post("/story", async (req, res) => {
@@ -491,8 +501,6 @@ async function run() {
       const result = await blogCollection.find().toArray();
       res.send(result);
     });
-
-
 
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
